@@ -9,16 +9,6 @@ from utils.cell_typer_model import CellTyper
 
 
 def main(args):
-    
-    # 1. check if the dataset has been split or not.
-        # If not, split into training and validation datasets.
-
-        # initiate pl.DataModule
-        # initiate model
-
-    # 2. train.
-
-    # 3. evaluate.
 
     data_module = CellTyperDataModule(args)
     model = CellTyper(args)
