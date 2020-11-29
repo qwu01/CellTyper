@@ -27,15 +27,15 @@ class CellTyperDataSet(Dataset):
         #TODO try torch.sparse
         expressions = torch.tensor(self.expressions[:,i].todense()).type(torch.FloatTensor)
         cell_types = torch.tensor(self.cell_types[i,:].todense()).type(torch.FloatTensor)
-        cell_annotations = self.cells.iloc[i].to_dict()
-        gene_annotations = self.genes.iloc[i].to_dict()
+        # cell_annotations = self.cells.iloc[i].to_dict()
+        # gene_annotations = self.genes.iloc[i].to_dict()
         
         return {
             "expressions": expressions,
             "cell_types": cell_types,
-            "positives_weights": self.positives_weights,
-            "cell_annotations": cell_annotations,
-            "gene_annotations": gene_annotations
+            "positives_weights": self.positives_weights
+            # "cell_annotations": cell_annotations,
+            # "gene_annotations": gene_annotations
         }
 
 
@@ -75,14 +75,8 @@ class CellTyperDataModule(pl.LightningDataModule):
         self.cell_type_labels_training = load_npz(self.split_folder/"cell_type_labels_training.npz")
         self.cell_type_labels_test = load_npz(self.split_folder/"cell_type_labels_test.npz")
 
-        assert len(self.cells_training) == self.cell_type_labels_training.shape[0], "Something wrong with the training-test split. Confused on row/columns??"
-        assert len(self.cells_test) == self.cell_type_labels_test.shape[0], f"Something wrong with the training-test split. Confused on row/columns? cells_test length: {len(self.cells_test)}, celltype_label_[0]dim={self.cell_type_labels_test.shape[0]}"
-
         self.expression_training = load_npz(self.split_folder/"expression_training.npz")
         self.expression_test = load_npz(self.split_folder/"expression_test.npz")
-
-        assert self.expression_training.shape[1] == self.cell_type_labels_training.shape[0], "Something wrong with the training-test split. Confused on row/columns??"
-        assert self.expression_test.shape[1] == self.cell_type_labels_test.shape[0], "Something wrong with the training-test split. Confused on row/columns??"
 
 
     def prepare_data(self):

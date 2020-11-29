@@ -13,9 +13,8 @@ def main(args):
     data_module = CellTyperDataModule(args)
     model = CellTyper(args)
     wandb_logger = WandbLogger(name=args.wandb_name, project=args.wandb_project)
-    trainer = pl.Trainer(logger=wandb_logger, gpus=-1, accumulate_grad_batches=args.accumulate_grad_batches, max_epochs=2, log_every_n_steps=args.log_every_n_steps, default_root_dir = args.default_root_dir)
+    trainer = pl.Trainer(logger=wandb_logger, gpus=-1, accumulate_grad_batches=args.accumulate_grad_batches, max_epochs=args.max_epochs, log_every_n_steps=args.log_every_n_steps, default_root_dir = args.default_root_dir)
     trainer.fit(model, data_module)
-
 
 
 if __name__ == '__main__':

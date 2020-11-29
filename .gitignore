@@ -3,5 +3,6 @@
 x.py
 Data/
 .ipynb_checkpoints/
-.wandb/
-.mlp_dropout90/
+wandb/
+mlp_dropout90/
+utils/__pycache__/

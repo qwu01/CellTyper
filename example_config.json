@@ -5,20 +5,16 @@
     "split_idx_path": "Data/split_idx.json",
     "split_folder": "Data/split/",
 
-
-    "pretrained_base_path": "model/protbert",
-    "classification_output_dim": 20,
-
-    "wandb_name": "mlp_dropout90",
-    "wandb_project": "mlp_dropout90",
-    "default_root_dir": "mlp_dropout90/1gpu",
+    "wandb_name": "mlp2_dropout90",
+    "wandb_project": "mlp2_dropout90",
+    "default_root_dir": "mlp2_dropout90",
     
     "num_hidden_layers": 2,
     "hidden_size": 512,
     "cls_size": 10,
     "feature_size": 33694,
 
-
+    "dropout_rate":0.9,
     "max_epochs": 2000,
     "log_every_n_steps":1,
     "batch_size": 500,

@@ -19,7 +19,6 @@ class CellTyperClsHead(nn.Module):
 class CellTyper(pl.LightningModule):
 
     def __init__(self, args):
-
         super(CellTyper, self).__init__()
         self.args = args
         self._parse_args()
@@ -27,7 +26,7 @@ class CellTyper(pl.LightningModule):
         self.linear = nn.Linear(self.feature_size, self.hidden_size)
         self.layer_norm = nn.LayerNorm((1, self.hidden_size), elementwise_affine=False) # without Learnable Parameters
         self.non_linear = nn.ReLU()
-        self.dropout90 = nn.Dropout(0.9)
+        self.dropout90 = nn.Dropout(self.dropout_rate)
         if self.num_hidden_layers > 1:
             self.linears = nn.ModuleList([nn.Linear(self.hidden_size, self.hidden_size) for _ in range(self.num_hidden_layers-1)])
         self.cls_head = CellTyperClsHead(self.hidden_size, self.cls_size)
@@ -37,8 +36,8 @@ class CellTyper(pl.LightningModule):
         self.hidden_size = self.args.hidden_size
         self.cls_size = self.args.cls_size
         self.feature_size = self.args.feature_size
-
         self.learning_rate = self.args.learning_rate
+        self.dropout_rate = self.args.dropout_rate
 
     def forward(self, x):
         x = torch.transpose(x, 1, 2)
@@ -71,6 +70,8 @@ class CellTyper(pl.LightningModule):
         predictions = self(expressions)
         loss = nn.BCEWithLogitsLoss(pos_weight=pos_weights)(predictions, labels)
         val_acc = ((predictions>0).int() == labels.int().cuda()).sum()/labels.numel()
+        self.log('val_loss', loss)
+        self.log('val_accuracy', val_acc)
         return {'val_loss': loss, 'val_accuracy': val_acc}
 
     def validation_epoch_end(self, outputs):
