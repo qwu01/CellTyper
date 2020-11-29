@@ -1,1 +1,1 @@
-
+MAGIC_NUMBER = 42

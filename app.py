@@ -1,22 +1,23 @@
 from pathlib import Path
 from scipy.io import mmread as readMM
-import json
+import json, os
 from argparse import ArgumentParser, Namespace
 import pandas as pd
 
 
-def main(args):
-    gene_path = Path(args.gene_path)
-    cell_path = Path(args.cell_path)
-    expression_path = Path(args.expression_path)
 
-    genes = pd.read_csv(gene_path)
-    print(genes)
-    cells = pd.read_csv(cell_path)
-    print(cells)
-    tmp_exp = readMM(expression_path)
-    tmp_exp = tmp_exp.tocsr()
-    print(type(tmp_exp))
+
+def main(args):
+    pass
+    # 1. check if the dataset has been split or not.
+        # If not, split into training and validation datasets.
+
+        # initiate pl.DataModule
+        # initiate model
+
+    # 2. train.
+
+    # 3. evaluate.
 
 
 

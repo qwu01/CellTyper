@@ -2,22 +2,21 @@
     "gene_path": "Data/gene.csv",
     "cell_path": "Data/cell.csv",
     "expression_path": "Data/expression_sparse.mtx",
+    "split_idx_path": "Data/split_idx.json",
+    "split_folder": "Data/split/",
+
 
     "pretrained_base_path": "model/protbert",
-    "tokenizer_path": "model/tokenizer",
     "classification_output_dim": 20,
 
-    "wandb_name": "1gpu1day",
-    "wandb_project": "protbert-fintune",
-    "default_root_dir": "protbert/1gpu1day",
-    
-    "data_file_path": "data/result_verified.csv",
-    "block_size": 2560,
+    "wandb_name": "mlp_dropout70",
+    "wandb_project": "mlp_dropout70",
+    "default_root_dir": "mlp_dropout70/1gpu",
     
     "max_epochs": 2000,
     "log_every_n_steps":1,
-    "batch_size": 1,
-    "base_lr": 1e-6,
+    "batch_size": 100,
+    "base_lr": 1e-4,
     "classification_lr": 1e-4,
-    "accumulate_grad_batches": 3000
+    "accumulate_grad_batches": 1
 }
