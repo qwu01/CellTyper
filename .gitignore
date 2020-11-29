@@ -2,3 +2,6 @@
 .vscode/
 x.py
 Data/
+.ipynb_checkpoints/
+.wandb/
+.mlp_dropout90/

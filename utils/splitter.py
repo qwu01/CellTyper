@@ -5,7 +5,6 @@ import json
 from scipy.io import mmread as readMM
 from scipy.sparse import save_npz, load_npz
 from sklearn.preprocessing import OneHotEncoder
-from copy import deepcopy
 
 
 def generate_split_idx(cell_path: Path, split_idx_path="Data/split_idx.json", reproducible_random_state=42):
@@ -70,7 +69,7 @@ def split_them(cell_path: Path, expression_path: Path, split_folder: Path, split
     cells.iloc[split_idx['Train']].to_csv(Path(split_folder)/"cells_training.csv")
     cells.iloc[split_idx['Test']].to_csv(Path(split_folder)/"cells_test.csv")
     save_npz(Path(split_folder)/"cell_type_labels_training.npz", cell_type_labels[split_idx['Train'],:])
-    save_npz(Path(split_folder)/"cell_type_labels_test.npz", cell_type_labels[split_idx['Train'], :])
+    save_npz(Path(split_folder)/"cell_type_labels_test.npz", cell_type_labels[split_idx['Test'], :])
     save_npz(Path(split_folder)/"expression_training.npz", expressions[:,split_idx['Train']])
     save_npz(Path(split_folder)/"expression_test.npz",expressions[:,split_idx['Test']])
     
