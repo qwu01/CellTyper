@@ -6,3 +6,5 @@ Data/
 wandb/
 mlp_dropout90/
 utils/__pycache__/
+*.json
+.sbatch/
