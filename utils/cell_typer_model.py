@@ -31,6 +31,7 @@ class CellTyper(pl.LightningModule):
         self.args = args
         self._parse_args()
 
+        self.layer_norm_ = nn.LayerNorm((1, self.feature_size), elementwise_affine=False)
         if self.dropout_type == "variational": # use variational dropout
             self.linear = LinearSVD(self.feature_size, self.hidden_size) # input
             self.non_linear = nn.ReLU()
@@ -63,6 +64,7 @@ class CellTyper(pl.LightningModule):
 
     def forward(self, x):
         x = torch.transpose(x, 1, 2)
+        x = self.layer_norm_(x)
         x = self.linear(x)
         if self.dropout_type == "variational":
             x = self.non_linear(x)
@@ -93,15 +95,12 @@ class CellTyper(pl.LightningModule):
         if self.dropout_type == "variational":
             self.kl_weight = min(self.kl_weight+0.02, 1)
             kl = 0.0
-            k1, k2, k3 = 0.63576, 1.8732, 1.48695
             for m in self.children():
-                if hasattr(m, '__tag__'):
-                    kl = kl-torch.sum(k1*torch.sigmoid(k2+k3*m.log_alpha)-0.5*torch.log1p(torch.exp(-m.log_alpha)))
-            loss = nn.BCEWithLogitsLoss(pos_weight=pos_weights)(predictions, labels) * self.training_set_size + self.kl_weight * kl
-            # loss = nn.BCEWithLogitsLoss(pos_weight=pos_weights)(predictions, labels) + self.kl_weight * kl
+                if hasattr(m, 'compute_kl'):
+                    kl = kl + m.compute_kl()
+            loss = nn.BCEWithLogitsLoss(pos_weight=pos_weights)(predictions, labels) * self.training_set_size + self.kl_weight*kl
         else:
             loss = nn.BCEWithLogitsLoss(pos_weight=pos_weights)(predictions, labels)
-        # train_acc = ((predictions>0).int() == labels.int().cuda()).sum()/labels.numel()
         train_acc = ((predictions>0).int() == labels.int().to(self.device)).sum()/labels.numel()
         self.log('training_loss', loss, prog_bar=True)
         self.log('training_accuracy', train_acc, prog_bar=True)
@@ -114,15 +113,13 @@ class CellTyper(pl.LightningModule):
         predictions = self(expressions)
         if self.dropout_type == "variational":
             kl = 0.0
-            k1, k2, k3 = 0.63576, 1.8732, 1.48695
             for m in self.children():
-                if hasattr(m, '__tag__'):
-                    kl = kl-torch.sum(k1*torch.sigmoid(k2+k3*m.log_alpha)-0.5*torch.log1p(torch.exp(-m.log_alpha)))
+                if hasattr(m, 'compute_kl'):
+                    kl = kl + m.compute_kl()
             
             loss = nn.BCEWithLogitsLoss(pos_weight=pos_weights)(predictions, labels) * self.training_set_size + self.kl_weight * kl
         else:
             loss = nn.BCEWithLogitsLoss(pos_weight=pos_weights)(predictions, labels)
-        # val_acc = ((predictions>0).int() == labels.int().cuda()).sum()/labels.numel()
         val_acc = ((predictions>0).int() == labels.int().to(self.device)).sum()/labels.numel()
         return {'val_loss': loss, 'val_accuracy': val_acc}
 

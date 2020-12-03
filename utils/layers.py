@@ -11,8 +11,6 @@ class LinearSVD(nn.Module):
         self.out_features = out_features
         self.threshold = threshold ##
 
-        self.__tag__ = "Not important. Used to figure out which module is LinearSVD"
-
         self.W = nn.Parameter(torch.Tensor(out_features, in_features))
         self.log_sigma = nn.Parameter(torch.Tensor(out_features, in_features))
         self.bias = nn.Parameter(torch.Tensor(1, out_features))
@@ -34,3 +32,9 @@ class LinearSVD(nn.Module):
             return lrt_mean + lrt_std * eps
     
         return F.linear(x, self.W * (self.log_alpha < 3).float()) + self.bias
+
+    def compute_kl(self):
+        k1, k2, k3 = 0.63576, 1.8732, 1.48695
+        kl = k1*torch.sigmoid(k2 + k3*self.log_alpha)-0.5*torch.log1p(torch.exp(-self.log_alpha))
+        kl = -torch.sum(kl)
+        return kl
