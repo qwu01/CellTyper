@@ -5,11 +5,10 @@ import torch.nn.functional as F
 class LinearSVD(nn.Module):
     """SVD implementation taken from Deep.Bayes Summer school
     """
-    def __init__(self, in_features, out_features, threshold=None, bias=True):
+    def __init__(self, in_features, out_features, bias=True):
         super(LinearSVD, self).__init__()
         self.in_features = in_features
         self.out_features = out_features
-        self.threshold = threshold ##
 
         self.W = nn.Parameter(torch.Tensor(out_features, in_features))
         self.log_sigma = nn.Parameter(torch.Tensor(out_features, in_features))
