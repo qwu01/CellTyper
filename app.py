@@ -6,10 +6,12 @@ import json
 
 from utils.cell_typer_dataset import CellTyperDataModule
 from utils.cell_typer_model import CellTyper
+from pytorch_lightning import Trainer, seed_everything
 
 
 def main(args):
 
+    seed_everything(0)
     data_module = CellTyperDataModule(args)
     model = CellTyper(args)
     wandb_logger = WandbLogger(name=args.wandb_name, project=args.wandb_project)

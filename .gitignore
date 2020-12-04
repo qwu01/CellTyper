@@ -1,5 +1,6 @@
 .CellTypePredictor/
 .vscode/
+.Model/
 x.py
 Data/
 .ipynb_checkpoints/

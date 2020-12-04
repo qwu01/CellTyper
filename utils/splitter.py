@@ -7,7 +7,7 @@ from scipy.sparse import save_npz, load_npz
 from sklearn.preprocessing import OneHotEncoder
 
 
-def generate_split_idx(cell_path: Path, split_idx_path="Data/split_idx.json", reproducible_random_state=42):
+def generate_split_idx(cell_path: Path, split_idx_path="Data/split_idx.json"):
     """This works by output a list of indexes using sklearn's StratifiedShuffleSplit. 
     This also output a csr sparse matrix as binarized labels.
     The index can be used to splice the expression matrix and the labels. 
@@ -24,7 +24,7 @@ def generate_split_idx(cell_path: Path, split_idx_path="Data/split_idx.json", re
     cell_type_labels = enc.transform(cells['CellType'].to_numpy().reshape(-1, 1))
     save_npz(Path(split_idx_path).parent/'CellTypeLabels.npz', cell_type_labels)
     
-    split_them = StratifiedShuffleSplit(n_splits=1, test_size=0.5, random_state=reproducible_random_state) 
+    split_them = StratifiedShuffleSplit(n_splits=1, test_size=0.5) 
     split_idx = split_them.split(tmp, tmp) # It requires X and y, where X is not available now. Use y instead.
 
     split_res = None
