@@ -5,7 +5,7 @@ import pytorch_lightning as pl
 from argparse import ArgumentParser
 from torch.optim import Adam
 from torch.optim.lr_scheduler import MultiStepLR
-from sklearn.metrics import roc_auc_score
+from sklearn.metrics import roc_auc_score, f1_score, average_precision_score
 
 class LinearSVD(nn.Module):
     """SVD implementation taken from Deep.Bayes Summer school
@@ -165,7 +165,11 @@ class CellTyper(pl.LightningModule):
         self.log('avg_val_accuracy', avg_acc)
         val_predictions = torch.cat([x['predictions'] for x in outputs])
         val_labels = torch.cat([x['labels'] for x in outputs])
-        print(roc_auc_score(y_true=val_labels.cpu(), y_score=val_predictions.cpu()))
+        print()
+        print(f'AUC_ROC = {roc_auc_score(y_true=val_labels.cpu(), y_score=val_predictions.cpu())}')
+        print(f'F1_score = {f1_score(y_true=val_labels.cpu(), y_pred=(val_predictions>0).cpu(), average="samples")}')
+        print(f'Average_precision_recall (AP) = {average_precision_score(y_true=val_labels.cpu(), y_score=val_predictions.cpu(), average="samples")}')
+
         # do something (e.g. ROC/Pr-Recall) #NOTE: need `validation_step` to return all predictions and labels
 
     def test_step(self, batch, i):
@@ -178,8 +182,12 @@ class CellTyper(pl.LightningModule):
         avg_acc = torch.cat([x['test_accuracy'].unsqueeze(0) for x in outputs]).mean()
         self.log('average_test_loss', avg_loss)
         self.log('average_test_acc', avg_acc)
-        val_predictions = torch.cat([x['predictions'] for x in outputs])
-        val_labels = torch.cat([x['labels'] for x in outputs])
+        test_predictions = torch.cat([x['predictions'] for x in outputs])
+        test_labels = torch.cat([x['labels'] for x in outputs])
+        print()
+        print(f'AUC_ROC = {roc_auc_score(y_true=test_labels.cpu(), y_score=test_predictions.cpu())}')
+        print(f'F1_score = {f1_score(y_true=test_labels.cpu(), y_pred=(test_predictions>0).cpu(), average="samples")}')
+        print(f'Average_precision_recall (AP) = {average_precision_score(y_true=test_labels.cpu(), y_score=test_predictions.cpu(), average="samples")}')
 
     def configure_optimizers(self):
         optimizer = Adam(self.parameters(), lr=self.hparams.learning_rate)
