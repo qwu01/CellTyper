@@ -51,6 +51,7 @@ class CellTyperDataModule(pl.LightningDataModule):
             cell_type_test = torch.Tensor(self.get_dummies.transform(self.cells["test"][['CellType']]).toarray()).type(torch.FloatTensor)
             positive_weights_test = (cell_type_test.shape[0] - cell_type_test.sum(axis=0))/cell_type_test.sum(axis=0)
             expression_test = readMM(self.folders["test"]/"log_norm_count_sparse.mtx").tocsr()
+            expression_test = torch.transpose(torch.tensor(expression_test.todense()).type(torch.FloatTensor), 0, 1)
             expression_test = torch.Tensor(self.standard_scaler.transform(expression_test))
             self.test_set = CellTyperDataSet(cell_type_test, expression_test, positive_weights_test)
 

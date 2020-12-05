@@ -1,7 +1,7 @@
 .CellTypePredictor/
-.CellTyperTesting/
+CellTyperTesting/
 .vscode/
-.Model/
+Model/
 Data/
 .ipynb_checkpoints/
 wandb/
@@ -9,4 +9,4 @@ utils/__pycache__/
 sbatch/
 x.py
 debug.log
-/*.ipynb
+*.ipynb

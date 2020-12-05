@@ -3,7 +3,8 @@ import torch.nn as nn
 import torch.nn.functional as F
 import pytorch_lightning as pl
 from argparse import ArgumentParser
-
+from torch.optim import Adam
+from torch.optim.lr_scheduler import MultiStepLR
 
 class LinearSVD(nn.Module):
     """SVD implementation taken from Deep.Bayes Summer school
@@ -179,6 +180,6 @@ class CellTyper(pl.LightningModule):
         val_labels = torch.cat([x['labels'] for x in outputs])
 
     def configure_optimizers(self):
-        optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
-        scheduler = torch.optim.MultiStepLR(optimizer, milestones=[100,500,2000,4000,8000], gamma=0.2)
+        optimizer = Adam(self.parameters(), lr=self.hparams.learning_rate)
+        scheduler = MultiStepLR(optimizer, milestones=[100,500,2000,4000,8000], gamma=0.2)
         return [optimizer], [scheduler]
