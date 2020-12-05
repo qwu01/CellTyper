@@ -166,11 +166,9 @@ class CellTyper(pl.LightningModule):
         val_predictions = torch.cat([x['predictions'] for x in outputs])
         val_labels = torch.cat([x['labels'] for x in outputs])
         print()
-        print(f'AUC_ROC = {roc_auc_score(y_true=val_labels.cpu(), y_score=val_predictions.cpu())}')
-        print(f'F1_score = {f1_score(y_true=val_labels.cpu(), y_pred=(val_predictions>0).cpu(), average="samples")}')
-        print(f'Average_precision_recall (AP) = {average_precision_score(y_true=val_labels.cpu(), y_score=val_predictions.cpu(), average="samples")}')
-
-        # do something (e.g. ROC/Pr-Recall) #NOTE: need `validation_step` to return all predictions and labels
+        self.log('AUC_ROC', roc_auc_score(y_true=val_labels.cpu(), y_score=val_predictions.cpu()))
+        self.log('F1_score', f1_score(y_true=val_labels.cpu(), y_pred=(val_predictions>0).cpu(), average="samples"))
+        self.log('Average_precision_recall (AP)', average_precision_score(y_true=val_labels.cpu(), y_score=val_predictions.cpu(), average="samples"))
 
     def test_step(self, batch, i):
         loss, predictions, labels = self.shared_step(batch)
@@ -184,10 +182,9 @@ class CellTyper(pl.LightningModule):
         self.log('average_test_acc', avg_acc)
         test_predictions = torch.cat([x['predictions'] for x in outputs])
         test_labels = torch.cat([x['labels'] for x in outputs])
-        print()
-        print(f'AUC_ROC = {roc_auc_score(y_true=test_labels.cpu(), y_score=test_predictions.cpu())}')
-        print(f'F1_score = {f1_score(y_true=test_labels.cpu(), y_pred=(test_predictions>0).cpu(), average="samples")}')
-        print(f'Average_precision_recall (AP) = {average_precision_score(y_true=test_labels.cpu(), y_score=test_predictions.cpu(), average="samples")}')
+        self.log('AUC_ROC', roc_auc_score(y_true=test_labels.cpu(), y_score=test_predictions.cpu()))
+        self.log('F1_score', f1_score(y_true=test_labels.cpu(), y_pred=(test_predictions>0).cpu(), average="samples"))
+        self.log('Average_precision_recall (AP)', average_precision_score(y_true=test_labels.cpu(), y_score=test_predictions.cpu(), average="samples"))
 
     def configure_optimizers(self):
         optimizer = Adam(self.parameters(), lr=self.hparams.learning_rate)
