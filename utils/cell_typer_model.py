@@ -179,4 +179,6 @@ class CellTyper(pl.LightningModule):
         val_labels = torch.cat([x['labels'] for x in outputs])
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
+        optimizer = torch.optim.Adam(self.parameters(), lr=self.hparams.learning_rate)
+        scheduler = torch.optim.MultiStepLR(optimizer, milestones=[100,500,2000,4000,8000], gamma=0.2)
+        return [optimizer], [scheduler]
