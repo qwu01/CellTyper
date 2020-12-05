@@ -1,11 +1,12 @@
 .CellTypePredictor/
+.CellTyperTesting/
 .vscode/
 .Model/
-x.py
 Data/
 .ipynb_checkpoints/
 wandb/
-mlp_dropout90/
 utils/__pycache__/
-*.json
-.sbatch/
+sbatch/
+x.py
+debug.log
+/*.ipynb
