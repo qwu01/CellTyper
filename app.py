@@ -40,9 +40,9 @@ def main(args):
 
     trainer.fit(model, data)
 
-    data.setup('test')
+    # data.setup('test')
 
-    trainer.test(model, data)
+    trainer.test(datamodule=data)
 
 
 

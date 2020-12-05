@@ -5,6 +5,7 @@ import pytorch_lightning as pl
 from argparse import ArgumentParser
 from torch.optim import Adam
 from torch.optim.lr_scheduler import MultiStepLR
+from sklearn.metrics import roc_auc_score
 
 class LinearSVD(nn.Module):
     """SVD implementation taken from Deep.Bayes Summer school
@@ -164,6 +165,7 @@ class CellTyper(pl.LightningModule):
         self.log('avg_val_accuracy', avg_acc)
         val_predictions = torch.cat([x['predictions'] for x in outputs])
         val_labels = torch.cat([x['labels'] for x in outputs])
+        print(roc_auc_score(y_true=val_labels.cpu(), y_score=val_predictions.cpu()))
         # do something (e.g. ROC/Pr-Recall) #NOTE: need `validation_step` to return all predictions and labels
 
     def test_step(self, batch, i):
@@ -181,5 +183,5 @@ class CellTyper(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = Adam(self.parameters(), lr=self.hparams.learning_rate)
-        scheduler = MultiStepLR(optimizer, milestones=[100,500,2000,4000,8000], gamma=0.2)
+        scheduler = MultiStepLR(optimizer, milestones=[100,200,500,2000,4000,8000], gamma=0.2)
         return [optimizer], [scheduler]
