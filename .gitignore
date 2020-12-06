@@ -8,5 +8,7 @@ wandb/
 utils/__pycache__/
 sbatch/
 x.py
+y.py
 debug.log
 *.ipynb
+checkpoints/

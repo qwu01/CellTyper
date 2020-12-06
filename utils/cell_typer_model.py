@@ -165,7 +165,6 @@ class CellTyper(pl.LightningModule):
         self.log('avg_val_accuracy', avg_acc)
         val_predictions = torch.cat([x['predictions'] for x in outputs])
         val_labels = torch.cat([x['labels'] for x in outputs])
-        print()
         self.log('AUC_ROC', roc_auc_score(y_true=val_labels.cpu(), y_score=val_predictions.cpu()))
         self.log('F1_score', f1_score(y_true=val_labels.cpu(), y_pred=(val_predictions>0).cpu(), average="samples"))
         self.log('Average_precision_recall (AP)', average_precision_score(y_true=val_labels.cpu(), y_score=val_predictions.cpu(), average="samples"))
