@@ -187,5 +187,5 @@ class CellTyper(pl.LightningModule):
 
     def configure_optimizers(self):
         optimizer = Adam(self.parameters(), lr=self.hparams.learning_rate)
-        scheduler = MultiStepLR(optimizer, milestones=[100,200,500,2000,4000,8000], gamma=0.2)
+        scheduler = MultiStepLR(optimizer, milestones=[1000,3000,6000], gamma=0.3)
         return [optimizer], [scheduler]
