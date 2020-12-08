@@ -12,3 +12,4 @@ y.py
 debug.log
 *.ipynb
 checkpoints/
+Predictions/
