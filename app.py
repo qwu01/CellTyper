@@ -20,12 +20,11 @@ def main(args):
     data = CellTyperDataModule(args)
     data.setup('fit')
 
-    model = CellTyper(
-        args, 
-        training_set_size=data.training_set_size,
-        num_labels=data.num_labels,
-        num_genes=data.num_genes
-    )
+    vars(args)['training_set_size'] = data.training_set_size
+    vars(args)['num_labels'] = data.num_labels
+    vars(args)['num_genes'] = data.num_genes
+    
+    model = CellTyper(args)
 
     wandb_logger = WandbLogger(
         name=args.wandb_name, 

@@ -45,11 +45,8 @@ class LinearSVD(nn.Module):
 
 
 class CellTyper(pl.LightningModule):
-    def __init__(self, args, training_set_size, num_labels, num_genes):
+    def __init__(self, args):
         super(CellTyper, self).__init__()
-        self.training_set_size = training_set_size
-        self.num_labels = num_labels
-        self.num_genes = num_genes
         self.save_hyperparameters(args)
 
         if self.hparams.dropout_type == "variational":
@@ -75,22 +72,22 @@ class CellTyper(pl.LightningModule):
 
     def initiate_variational(self):
         if self.hparams.num_hidden_layers == 0:
-            self.linear = LinearSVD(self.num_genes, self.num_labels)
+            self.linear = LinearSVD(self.hparams.num_genes, self.hparams.num_labels)
         elif self.hparams.num_hidden_layers > 0:
-            self.input_layer = LinearSVD(self.num_genes, self.hparams.hidden_size)
+            self.input_layer = LinearSVD(self.hparams.num_genes, self.hparams.hidden_size)
             self.non_linear = nn.ReLU()
-            self.output_layer = LinearSVD(self.hparams.hidden_size, self.num_labels)
+            self.output_layer = LinearSVD(self.hparams.hidden_size, self.hparams.num_labels)
             self.hidden_layers = nn.ModuleList([LinearSVD(self.hparams.hidden_size, self.hparams.hidden_size) for _ in range(self.hparams.num_hidden_layers)])
 
     def initiate_standard(self):
         if self.hparams.num_hidden_layers == 0:
-            self.linear = nn.Linear(self.num_genes, self.num_labels)
+            self.linear = nn.Linear(self.hparams.num_genes, self.hparams.num_labels)
             self.dropout = nn.Dropout(self.hparams.dropout_rate)
         elif self.hparams.num_hidden_layers > 0:
-            self.input_layer = nn.Linear(self.num_genes, self.hparams.hidden_size)
+            self.input_layer = nn.Linear(self.hparams.num_genes, self.hparams.hidden_size)
             self.non_linear = nn.ReLU()
             self.dropout = nn.Dropout(self.hparams.dropout_rate)
-            self.output_layer = nn.Linear(self.hparams.hidden_size, self.num_labels)
+            self.output_layer = nn.Linear(self.hparams.hidden_size, self.hparams.num_labels)
             self.hidden_dropout = nn.Dropout(self.hparams.hidden_dropout_rate)
             self.hidden_layers = nn.ModuleList([nn.Linear(self.hparams.hidden_size, self.hparams.hidden_size) for _ in range(self.hparams.num_hidden_layers)])
 
@@ -141,7 +138,7 @@ class CellTyper(pl.LightningModule):
             for m in self.children():
                 if hasattr(m, 'compute_kl'):
                     kl = kl + m.compute_kl()
-            loss = nn.BCEWithLogitsLoss(pos_weight=pos_weights)(predictions, labels)*self.training_set_size + self.hparams.kl_weight*kl
+            loss = nn.BCEWithLogitsLoss(pos_weight=pos_weights)(predictions, labels)*self.hparams.training_set_size + self.hparams.kl_weight*kl
         else:
             loss = nn.BCEWithLogitsLoss(pos_weight=pos_weights)(predictions, labels)
         return loss, predictions, labels
