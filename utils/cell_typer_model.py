@@ -5,7 +5,7 @@ import pytorch_lightning as pl
 from argparse import ArgumentParser
 from torch.optim import Adam
 from torch.optim.lr_scheduler import MultiStepLR
-from sklearn.metrics import roc_auc_score, f1_score, average_precision_score
+from sklearn.metrics import roc_auc_score, f1_score, average_precision_score, accuracy_score, precision_score, recall_score
 
 class LinearSVD(nn.Module):
     """SVD implementation taken from Deep.Bayes Summer school
@@ -165,6 +165,9 @@ class CellTyper(pl.LightningModule):
         self.log('AUC_ROC', roc_auc_score(y_true=val_labels.cpu(), y_score=val_predictions.cpu()))
         self.log('F1_score', f1_score(y_true=val_labels.cpu(), y_pred=(val_predictions>0).cpu(), average="samples"))
         self.log('Average_precision_recall (AP)', average_precision_score(y_true=val_labels.cpu(), y_score=val_predictions.cpu(), average="samples"))
+        self.log('accuracy_score', accuracy_score(y_true=val_labels.cpu(), y_pred=(val_predictions>0).cpu(), average="samples"))
+        self.log('precision_score', precision_score(y_true=val_labels.cpu(), y_pred=(val_predictions>0).cpu(), average="samples"))
+        self.log('recall_score', recall_score(y_true=val_labels.cpu(), y_pred=(val_predictions>0).cpu(), average="samples"))
 
     def test_step(self, batch, i):
         loss, predictions, labels = self.shared_step(batch)
@@ -178,11 +181,18 @@ class CellTyper(pl.LightningModule):
         self.log('average_test_acc', avg_acc)
         test_predictions = torch.cat([x['predictions'] for x in outputs])
         test_labels = torch.cat([x['labels'] for x in outputs])
-        self.log('AUC_ROC', roc_auc_score(y_true=test_labels.cpu(), y_score=test_predictions.cpu()))
-        self.log('F1_score', f1_score(y_true=test_labels.cpu(), y_pred=(test_predictions>0).cpu(), average="samples"))
-        self.log('Average_precision_recall (AP)', average_precision_score(y_true=test_labels.cpu(), y_score=test_predictions.cpu(), average="samples"))
+        y_true = test_labels.cpu()
+        y_score = test_predictions.cpu()
+        y_pred = y_score > 0
+        self.log('AUC-ROC', roc_auc_score(y_true=y_true, y_score=y_score))
+        self.log('F1 Score', f1_score(y_true=y_true, y_pred=y_pred, average="weighted"))
+        self.log('Average Precision Recall (AP)', average_precision_score(y_true=y_true, y_score=y_score, average="weighted"))
+        self.log('Balanced Accuracy Score', accuracy_score(y_true=y_true, y_pred=y_pred))
 
     def configure_optimizers(self):
         optimizer = Adam(self.parameters(), lr=self.hparams.learning_rate)
         scheduler = MultiStepLR(optimizer, milestones=[1000,3000,6000], gamma=0.3)
         return [optimizer], [scheduler]
+
+    def run_matrics(self, y_labels, y_predictions):
+        pass

@@ -1,6 +1,6 @@
 from pathlib import Path
 import pandas as pd
-from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import balanced_accuracy_score, f1_score
 
 
 def construct_dict(method_list=("scmap_Cell_results", "scmap_Cluster_resluts"), parent_path="Predictions"):
@@ -55,12 +55,10 @@ def calculate_metrics(results, save_folder_path=None):
                 y_true = df["Ground Truth"]
                 y_pred = df['Predictions']
                 metrics.append((method_name, trainset_name, testset_name, 
-                                accuracy_score(y_true,y_pred), 
-                                precision_score(y_true,y_pred,average="weighted"), 
-                                recall_score(y_true,y_pred,average="weighted"), 
+                                balanced_accuracy_score(y_true,y_pred), 
                                 f1_score(y_true,y_pred,average="weighted")))
     if save_folder_path:
-        col_names = ('method_name','training_set','test_set','accuracy','precision','recall','f1_score')
+        col_names = ('method_name','training_set','test_set','balanced_accuracy','f1_score')
         pd.DataFrame(metrics, columns=col_names).to_csv(save_folder_path, sep=',')
     return metrics
 
