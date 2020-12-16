@@ -21,11 +21,6 @@ class CellTyperDataModule(pl.LightningDataModule):
             "test": Path(self.args.test_set_folder)
         }
         self.genes = pd.read_csv(self.folders['training']/"gene.csv", index_col=0)
-        
-        if self.args.feature_selection:
-            if self.args.feature_number not in (300, 500, 1000, 2000):
-                raise ValueError("Invalid feature number; choose from [300,500,1000,2000]")
-            
 
         print(self.genes)
         self.cells = {
