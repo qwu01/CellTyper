@@ -81,6 +81,9 @@ class CellTyperDataModule(pl.LightningDataModule):
         parser.add_argument("--validation_set_folder", type=str, default="Data/datasets/pbmc1_10x Chromium (v2) A_validation") # for later using different set of training data
         parser.add_argument("--test_set_folder", type=str, default="Data/datasets/pbmc1_10x Chromium (v2) A_test") # for later using different set of training data
         parser.add_argument("--batch_size", type=int, default=4000)
+
+        parser.add_argument("--feature_selection_method", type=str, default=None,  choices=("scmap", "hvg", "random"))
+        parser.add_argument("--feature_number", type=int, default=None, choice = (300,500,1000,2000))
         return parser
 
 
