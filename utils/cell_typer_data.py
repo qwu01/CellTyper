@@ -22,7 +22,6 @@ class CellTyperDataModule(pl.LightningDataModule):
         }
         self.genes = pd.read_csv(self.folders['training']/"gene.csv", index_col=0)
 
-        print(self.genes)
         self.cells = {
             "training": pd.read_csv(self.folders["training"]/"cell.csv", index_col=0).reset_index(drop=True)[['Name', 'CellType']],
             "validation": pd.read_csv(self.folders["validation"]/"cell.csv", index_col=0).reset_index(drop=True)[['Name', 'CellType']],
