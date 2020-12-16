@@ -21,16 +21,19 @@ class CellTyperDataModule(pl.LightningDataModule):
             "test": Path(self.args.test_set_folder)
         }
         self.genes = pd.read_csv(self.folders['training']/"gene.csv", index_col=0)
+        self.gene_selection_masks = pd.read_csv(self.folders['training']/"gene_selection.csv", index_col=0)
+        assert all(self.genes.index == self.gene_selection_masks.index), "Feature selection mask index is not aligned to expression matrix!!"
 
         self.cells = {
             "training": pd.read_csv(self.folders["training"]/"cell.csv", index_col=0).reset_index(drop=True)[['Name', 'CellType']],
             "validation": pd.read_csv(self.folders["validation"]/"cell.csv", index_col=0).reset_index(drop=True)[['Name', 'CellType']],
             "test": pd.read_csv(self.folders["test"]/"cell.csv", index_col=0).reset_index(drop=True)[['Name', 'CellType']]
         }
-        print(self.cells)
+        
         self.get_dummies.fit(self.cells["training"][["CellType"]])
 
     def setup(self, stage=None):
+
         if stage == "fit" or stage is None:
 
             cell_type_training = torch.Tensor(self.get_dummies.transform(self.cells["training"][['CellType']]).toarray()).type(torch.FloatTensor)
@@ -54,6 +57,7 @@ class CellTyperDataModule(pl.LightningDataModule):
 
             self.num_labels = self.training_set.n_labels
             self.num_genes = self.training_set.n_features
+
         if stage == "test" or stage is None:
             cell_type_test = torch.Tensor(self.get_dummies.transform(self.cells["test"][['CellType']]).toarray()).type(torch.FloatTensor)
             positive_weights_test = (cell_type_test.shape[0] - cell_type_test.sum(axis=0))/cell_type_test.sum(axis=0)
