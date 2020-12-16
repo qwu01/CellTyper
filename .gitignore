@@ -9,6 +9,7 @@ utils/__pycache__/
 sbatch/
 x.py
 y.py
+z.py
 debug.log
 *.ipynb
 checkpoints/

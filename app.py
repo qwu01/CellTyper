@@ -1,9 +1,10 @@
-from argparse import ArgumentParser
+from argparse import ArgumentParser, Namespace
 from pytorch_lightning.loggers import WandbLogger
 from pytorch_lightning.callbacks import ModelCheckpoint
 from utils.cell_typer_model import CellTyper
 from utils.cell_typer_data import CellTyperDataModule
 from pytorch_lightning import Trainer, seed_everything
+import json
 
 
 def main(args):
@@ -52,11 +53,19 @@ if __name__ == '__main__':
     parser = Trainer.add_argparse_args(parser)
 
     parser.add_argument('--wandb_name', type=str, default='CT-test1') # logger
-    parser.add_argument('--wandb_project', type=str, default='CT-test') # logger
+    parser.add_argument('--wandb_project', type=str, default='CellTyperProject') # logger
     parser.add_argument('--monitor', type=str, default='avg_val_loss') # callback
     parser.add_argument('--dirpath', type=str, default=None) # callback
     parser.add_argument('--filename', type=str, default='{epoch}-{avg_val_loss:.2f}') # callback
     parser.add_argument('--save_top_k', type=int, default=1) # callback
-    
+
+    parser.add_argument('--json_args', default=None, help='load arguments from json')
     args = parser.parse_args()
+    if args.json_args:
+        with open(args.json_args, 'r') as f:
+            json_args = Namespace()
+            json_args.__dict__.update(json.load(f))
+            args = parser.parse_args(namespace=json_args)
+    
+    
     main(args)

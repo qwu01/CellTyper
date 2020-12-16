@@ -20,7 +20,14 @@ class CellTyperDataModule(pl.LightningDataModule):
             "validation": Path(self.args.validation_set_folder),
             "test": Path(self.args.test_set_folder)
         }
-        genes = pd.read_csv(self.folders['training']/"gene.csv", index_col=0)
+        self.genes = pd.read_csv(self.folders['training']/"gene.csv", index_col=0)
+        
+        if self.args.feature_selection:
+            if self.args.feature_number not in (300, 500, 1000, 2000):
+                raise ValueError("Invalid feature number; choose from [300,500,1000,2000]")
+            
+
+        print(self.genes)
         self.cells = {
             "training": pd.read_csv(self.folders["training"]/"cell.csv", index_col=0).reset_index(drop=True)[['Name', 'CellType']],
             "validation": pd.read_csv(self.folders["validation"]/"cell.csv", index_col=0).reset_index(drop=True)[['Name', 'CellType']],
@@ -73,7 +80,7 @@ class CellTyperDataModule(pl.LightningDataModule):
         parser.add_argument("--training_set_folder", type=str, default="Data/datasets/pbmc1_10x Chromium (v2) A_training/") # for later using different set of training data
         parser.add_argument("--validation_set_folder", type=str, default="Data/datasets/pbmc1_10x Chromium (v2) A_validation") # for later using different set of training data
         parser.add_argument("--test_set_folder", type=str, default="Data/datasets/pbmc1_10x Chromium (v2) A_test") # for later using different set of training data
-        parser.add_argument("--batch_size", type=int, default=1000)
+        parser.add_argument("--batch_size", type=int, default=4000)
         return parser
 
 
