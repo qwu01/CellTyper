@@ -27,25 +27,31 @@ class CellTyperDataModule(pl.LightningDataModule):
             "validation": pd.read_csv(self.folders["validation"]/"cell.csv", index_col=0).reset_index(drop=True)[['Name', 'CellType']],
             "test": pd.read_csv(self.folders["test"]/"cell.csv", index_col=0).reset_index(drop=True)[['Name', 'CellType']]
         }
-
+        print(self.cells)
         self.get_dummies.fit(self.cells["training"][["CellType"]])
 
     def setup(self, stage=None):
         if stage == "fit" or stage is None:
+
             cell_type_training = torch.Tensor(self.get_dummies.transform(self.cells["training"][['CellType']]).toarray()).type(torch.FloatTensor)
             cell_type_validation = torch.Tensor(self.get_dummies.transform(self.cells["validation"][['CellType']]).toarray()).type(torch.FloatTensor)
+
             positive_weights_training = (cell_type_training.shape[0] - cell_type_training.sum(axis=0))/cell_type_training.sum(axis=0)
             positive_weights_validation = (cell_type_validation.shape[0] - cell_type_validation.sum(axis=0))/cell_type_validation.sum(axis=0)
+
             expression_training = readMM(self.folders["training"]/"log_norm_count_sparse.mtx").tocsr()
             expression_validation = readMM(self.folders["validation"]/"log_norm_count_sparse.mtx").tocsr()
             expression_training = torch.transpose(torch.tensor(expression_training.todense()).type(torch.FloatTensor), 0, 1)
             expression_validation = torch.transpose(torch.tensor(expression_validation.todense()).type(torch.FloatTensor), 0, 1)
+
             self.standard_scaler.fit(expression_training)
             expression_training = torch.Tensor(self.standard_scaler.transform(expression_training))
             expression_validation = torch.Tensor(self.standard_scaler.transform(expression_validation))
+
             self.training_set = CellTyperDataSet(cell_type_training, expression_training, positive_weights_training)
             self.validation_set = CellTyperDataSet(cell_type_validation, expression_validation, positive_weights_validation)
             self.training_set_size = self.training_set.n_examples
+
             self.num_labels = self.training_set.n_labels
             self.num_genes = self.training_set.n_features
         if stage == "test" or stage is None:
@@ -77,7 +83,7 @@ class CellTyperDataModule(pl.LightningDataModule):
         parser.add_argument("--batch_size", type=int, default=4000)
 
         parser.add_argument("--feature_selection_method", type=str, default=None,  choices=("scmap", "hvg", "random"))
-        parser.add_argument("--feature_number", type=int, default=None, choice = (300,500,1000,2000))
+        parser.add_argument("--feature_number", type=int, default=None, choices=(300,500,1000,2000))
         return parser
 
 
