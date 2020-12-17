@@ -63,7 +63,7 @@ class CellTyper(pl.LightningModule):
 
         parser.add_argument("--dropout_type", type=str, default="variational", choices=("variational", "standard"))
         parser.add_argument("--kl_weight", type=float, default=0.04)
-        parser.add_argument("--dropout_rate", type=float, default=0.95) # input dropout
+        parser.add_argument("--dropout_rate", type=float, default=0.05) # input dropout
         parser.add_argument("--hidden_dropout_rate", type=float, default=0.20)
 
         parser.add_argument("--learning_rate", type=float, default=1e-3)

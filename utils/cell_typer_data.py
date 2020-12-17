@@ -21,8 +21,23 @@ class CellTyperDataModule(pl.LightningDataModule):
             "test": Path(self.args.test_set_folder)
         }
         self.genes = pd.read_csv(self.folders['training']/"gene.csv", index_col=0)
-        self.gene_selection_masks = pd.read_csv(self.folders['training']/"gene_selection.csv", index_col=0)
-        assert all(self.genes.index == self.gene_selection_masks.index), "Feature selection mask index is not aligned to expression matrix!!"
+
+        if self.args.feature_selection_method:
+            if self.args.feature_selection_method == "random":
+                col_name = "rand" + str(self.args.feature_number)
+            elif self.args.feature_selection_method == "scmap":
+                col_name = "scmap" + str(self.args.feature_number)
+            elif self.args.feature_selection_method == "hvg":
+                col_name = "hvg" + str(self.args.feature_number)
+            else:
+                raise Exception("Check feature selection method in .json")
+
+            self.gene_selection_mask = pd.read_csv(self.folders['training']/"gene_selection.csv", index_col=0)
+            assert all(self.genes.index == self.gene_selection_mask.index), "Feature selection mask index is not aligned to expression matrix!!"
+            self.gene_selection_mask = self.gene_selection_mask[col_name].values
+
+            self.genes = self.genes[self.gene_selection_mask] # in case need the gene information, call dataset.genes
+            
 
         self.cells = {
             "training": pd.read_csv(self.folders["training"]/"cell.csv", index_col=0).reset_index(drop=True)[['Name', 'CellType']],
@@ -43,9 +58,18 @@ class CellTyperDataModule(pl.LightningDataModule):
             positive_weights_validation = (cell_type_validation.shape[0] - cell_type_validation.sum(axis=0))/cell_type_validation.sum(axis=0)
 
             expression_training = readMM(self.folders["training"]/"log_norm_count_sparse.mtx").tocsr()
+            expression_training = expression_training.todense()
+            if self.args.feature_selection_method:
+                expression_training = expression_training[self.gene_selection_mask]
+            expression_training = torch.tensor(expression_training).type(torch.FloatTensor)
+            expression_training = torch.transpose(expression_training, 0, 1)
+
             expression_validation = readMM(self.folders["validation"]/"log_norm_count_sparse.mtx").tocsr()
-            expression_training = torch.transpose(torch.tensor(expression_training.todense()).type(torch.FloatTensor), 0, 1)
-            expression_validation = torch.transpose(torch.tensor(expression_validation.todense()).type(torch.FloatTensor), 0, 1)
+            expression_validation = expression_validation.todense()
+            if self.args.feature_selection_method:
+                expression_validation = expression_validation[self.gene_selection_mask]
+            expression_validation = torch.tensor(expression_validation).type(torch.FloatTensor)
+            expression_validation = torch.transpose(expression_validation, 0, 1)
 
             self.standard_scaler.fit(expression_training)
             expression_training = torch.Tensor(self.standard_scaler.transform(expression_training))
@@ -59,11 +83,20 @@ class CellTyperDataModule(pl.LightningDataModule):
             self.num_genes = self.training_set.n_features
 
         if stage == "test" or stage is None:
+
             cell_type_test = torch.Tensor(self.get_dummies.transform(self.cells["test"][['CellType']]).toarray()).type(torch.FloatTensor)
+
             positive_weights_test = (cell_type_test.shape[0] - cell_type_test.sum(axis=0))/cell_type_test.sum(axis=0)
+
             expression_test = readMM(self.folders["test"]/"log_norm_count_sparse.mtx").tocsr()
-            expression_test = torch.transpose(torch.tensor(expression_test.todense()).type(torch.FloatTensor), 0, 1)
+            expression_test = expression_test.todense()
+            if self.args.feature_selection_method:
+                expression_test = expression_test[self.gene_selection_mask]
+            expression_test = torch.tensor(expression_test).type(torch.FloatTensor)
+            expression_test = torch.transpose(expression_test, 0, 1)
+
             expression_test = torch.Tensor(self.standard_scaler.transform(expression_test))
+
             self.test_set = CellTyperDataSet(cell_type_test, expression_test, positive_weights_test)
 
     def train_dataloader(self):
@@ -81,9 +114,9 @@ class CellTyperDataModule(pl.LightningDataModule):
     @staticmethod
     def add_data_specific_args(parent_parser):
         parser = ArgumentParser(parents=[parent_parser], add_help=False)
-        parser.add_argument("--training_set_folder", type=str, default="Data/datasets/pbmc1_10x Chromium (v2) A_training/") # for later using different set of training data
-        parser.add_argument("--validation_set_folder", type=str, default="Data/datasets/pbmc1_10x Chromium (v2) A_validation") # for later using different set of training data
-        parser.add_argument("--test_set_folder", type=str, default="Data/datasets/pbmc1_10x Chromium (v2) A_test") # for later using different set of training data
+        parser.add_argument("--training_set_folder", type=str, default="Data/datasets/pbmc1_10x_Chromium_v2_A_training/") # for later using different set of training data
+        parser.add_argument("--validation_set_folder", type=str, default="Data/datasets/pbmc1_10x_Chromium_v2_A_validation") # for later using different set of training data
+        parser.add_argument("--test_set_folder", type=str, default="Data/datasets/pbmc1_10x_Chromium_v2_A_test") # for later using different set of training data
         parser.add_argument("--batch_size", type=int, default=4000)
 
         parser.add_argument("--feature_selection_method", type=str, default=None,  choices=("scmap", "hvg", "random"))

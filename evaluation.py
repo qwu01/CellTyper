@@ -1,14 +1,14 @@
 from pathlib import Path
 import pandas as pd
-from sklearn.metrics import balanced_accuracy_score, f1_score, roc_auc_score, average_precision_score, jaccard_score
+from sklearn.metrics import balanced_accuracy_score, f1_score, jaccard_score
 
 
 
-def construct_dict(method_list=("scmap_Cell_results", "scmap_Cluster_resluts"), parent_path="Predictions"):
+def construct_dict(method_list=("scmap_Cell_results", "scmap_Cluster_results", "singleR_results"), parent_path="Predictions"):
     """ (Data generated from `R` using `scmap` library)
 
     Args:
-        method_list (list, optional): [description]. Defaults to ["scmap_Cell_results", "scmap_Cluster_resluts"].
+        method_list (list, optional): [description]. Defaults to ["scmap_Cell_results", "scmap_Cluster_results", "singleR_results"].
         parent_path (str, optional): [description]. Defaults to "Predictions".
 
     Returns:
@@ -25,7 +25,7 @@ def construct_dict(method_list=("scmap_Cell_results", "scmap_Cluster_resluts"), 
             .
             .
         }
-    """
+    """ # TODO: add neural nets for evaluation
     res_folders_path = [Path(parent_path)/method_folder for method_folder in method_list]
     results = {}
     for method_path in res_folders_path:
@@ -41,6 +41,7 @@ def construct_dict(method_list=("scmap_Cell_results", "scmap_Cluster_resluts"), 
 
 
 def calculate_metrics(results, save_folder_path=None):
+    
     """take results from `construct_dict()`, save metrics to `save_folder_path` (if not None)
 
     Args:
@@ -51,7 +52,9 @@ def calculate_metrics(results, save_folder_path=None):
     """
     metrics = []
     for method_name in results:
+        
         for trainset_name in results[method_name]:
+            
             for testset_name, df in results[method_name][trainset_name].items():
                 y_true = df["Ground Truth"]
                 y_pred = df['Predictions']
@@ -65,30 +68,9 @@ def calculate_metrics(results, save_folder_path=None):
     return metrics
 
 
-def calculate_matrics(labels, predictions, is_score=True):
-    y_true = labels.cpu()
-    if is_score:
-        y_score = predictions.cpu()
-        y_pred = y_score > 0
-        matrics = {
-            'Balanced Accuracy Score': balanced_accuracy_score(y_true=y_true, y_pred=y_pred),
-            # 'F1 Score': f1_score(y_true, y_pred, average="weighted"),
-            # 'AUC-ROC': roc_auc_score(y_true, y_score),
-            # 'Average Precision (AP)': average_precision_score(y_true, y_score, average="weighted"),
-            # 'Jaccard Similarity': jaccard_score(y_true, y_pred, average="weighted")
-        }
-    else:
-        y_pred = predictions
-        matrics = {
-            'Balanced Accuracy Score': balanced_accuracy_score(y_true, y_pred),
-            # 'F1 Score': f1_score(y_true, y_pred, average="weighted"),
-            # 'Jaccard Similarity': jaccard_score(y_true, y_pred, average="weighted")
-        }
-    return matrics
-
 
 def main():
-    results = construct_dict(method_list=("scmap_Cell_results", "scmap_Cluster_resluts", ""), parent_path="Predictions")
+    results = construct_dict(method_list=("scmap_Cell_results", "scmap_Cluster_results", "singleR_results"), parent_path="Predictions")
     results = calculate_metrics(results, save_folder_path="Predictions/res.csv")
 
 if __name__ == '__main__':
